@@ -29,7 +29,8 @@ class FrontendEditButtonPlugin extends Plugin
     private $editUrl = null;
 
     // private $adminCookieSuffix = '-admin-authenticated'; // till version 1.12
-    private $adminCookieSuffix = '-admin';    // since version 1.12.1
+    // private $adminCookieSuffix = '-admin';    // since version 1.12.1
+    private $adminCookieSuffix = '';    // 24/01/20 DCN: Want user session not admin
 
     /**
      * @function getSubscribedEvents
@@ -98,7 +99,6 @@ class FrontendEditButtonPlugin extends Plugin
         }
 
         $this->enable([
-            'onPageContentProcessed' => ['onPageContentProcessed', 0],
             'onTwigSiteVariables'    => ['onTwigSiteVariables', 0],
             'onOutputGenerated'      => ['onOutputGenerated', 0],
             'onTwigTemplatePaths'    => ['onTwigTemplatePaths', 0]
@@ -118,17 +118,6 @@ class FrontendEditButtonPlugin extends Plugin
     }
 
     /**
-     * @event onPageContentProcessed
-     *
-     * @param Event $event
-     */
-    public function onPageContentProcessed(Event $event)
-    {
-        $page = $event['page'];
-        $this->_config = $this->mergeConfig($page);
-    }
-
-    /**
      * @event onOutputGenerated
      */
     public function onOutputGenerated()
@@ -137,11 +126,14 @@ class FrontendEditButtonPlugin extends Plugin
             return;
         }
 
-        // frontend !!!
+        // 24/01/20 DCN: ToDo - use user authenticated with admin.pages permission, not finding the cookie, the cookie is still there even when logged off
         // $this->adminCookie = session_name() . '-admin-authenticated'; // till version 1.12
         $this->adminCookie = session_name() . $this->adminCookieSuffix; // since version 1.12.1
 
         $page = $this->grav['page'];
+
+        // 24/01/20 DCN: Copied from onPageContentProcessed 'cos its only done there when the page is cached and we need it every time the page is rendered
+        $this->_config = $this->mergeConfig($page);
 
         $header = $page->header();
 
